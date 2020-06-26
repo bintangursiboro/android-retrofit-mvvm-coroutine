@@ -3,6 +3,7 @@ package com.ijniclohot.goodapplication.request
 import com.ijniclohot.goodapplication.models.response.RecipeResponse
 import com.ijniclohot.goodapplication.models.response.RecipeSearchResponse
 import retrofit2.Call
+import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Query
 
@@ -15,5 +16,5 @@ interface RecipeApi {
     ): Call<RecipeSearchResponse>
 
     @GET("api/get")
-    fun getRecipe(@Query("rid") recipe_id: String): Call<RecipeResponse>
+    suspend fun getRecipe(@Query("rid") recipe_id: String): Call<RecipeResponse>
 }
