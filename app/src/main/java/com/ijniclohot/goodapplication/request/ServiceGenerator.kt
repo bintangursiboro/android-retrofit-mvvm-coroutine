@@ -1,6 +1,7 @@
 package com.ijniclohot.goodapplication.request
 
 import com.ijniclohot.goodapplication.utils.Constant
+import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
