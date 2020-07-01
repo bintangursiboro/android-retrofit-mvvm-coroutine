@@ -71,7 +71,7 @@ class RecipeApiClient {
             try {
                 val response = getRecipes(query, pageNumber).execute()
                 if (response.code() == 200) {
-                    var list: ArrayList<Recipe> = ArrayList()
+                    var list: ArrayList<Recipe>
                     response.body()?.let { responseBody ->
                         list = ArrayList(responseBody.recipes)
                         if (pageNumber == 1) {
@@ -85,10 +85,12 @@ class RecipeApiClient {
                     }
                 } else {
                     _mRecipes.postValue(null)
+                    cancelRequest()
                 }
             } catch (e: IOException) {
                 e.printStackTrace()
                 _mRecipes.postValue(null)
+                cancelRequest()
             }
         }
 

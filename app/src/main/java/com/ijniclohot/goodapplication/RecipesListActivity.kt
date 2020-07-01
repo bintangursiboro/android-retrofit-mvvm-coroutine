@@ -34,7 +34,7 @@ class RecipesListActivity : BaseActivity(), OnRecipeListener {
         initRecycleViewItem()
     }
 
-    private fun initRecycleViewItem(){
+    private fun initRecycleViewItem() {
         recipeListAdapter.displayCategory()
     }
 
@@ -48,10 +48,15 @@ class RecipesListActivity : BaseActivity(), OnRecipeListener {
     private fun subscribeObserver() {
         mRecipeListViewModel.getRecipes().observe(this,
             Observer {
-                it?.forEach { recipe ->
-                    Log.d(TAG, "onChanged: " + recipe.title)
+                if (it == null){
+                    recipeListAdapter.displayCategory()
+                }else{
+                    it.forEach { recipe ->
+                        Log.d(TAG, "onChanged: " + recipe.title)
+                    }
+                    recipeListAdapter.setRecipe(it)
                 }
-                recipeListAdapter.setRecipe(it)
+
             })
     }
 
@@ -76,7 +81,8 @@ class RecipesListActivity : BaseActivity(), OnRecipeListener {
     }
 
     override fun onCategoryClick(category: String) {
-
+        recipeListAdapter.displayLoading()
+        mRecipeListViewModel.searchRecipeApi(category, 1)
     }
 
 

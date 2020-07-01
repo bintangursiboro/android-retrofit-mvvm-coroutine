@@ -132,7 +132,7 @@ class RecipeRecycleAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        var view: View? = null
+        val view: View?
         when (viewType) {
             RECIPE_TYPE -> {
                 view =
