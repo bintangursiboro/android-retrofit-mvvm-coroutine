@@ -5,9 +5,9 @@ import android.os.Parcelable
 import java.util.ArrayList
 
 data class Recipe(
-    val title: String?, val publisher: String?,
-    val ingredients: ArrayList<String>?, val recipe_id: String?, val image_url: String?,
-    val social_rank: Double
+    var title: String?, var publisher: String?,
+    var ingredients: ArrayList<String>?, var recipe_id: String?, var image_url: String?,
+    var social_rank: Double?
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readString(),
@@ -19,13 +19,15 @@ data class Recipe(
     ) {
     }
 
+    constructor() : this("", "", null, "", "", 0.0)
+
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeString(title)
         parcel.writeString(publisher)
         parcel.writeStringList(ingredients)
         parcel.writeString(recipe_id)
         parcel.writeString(image_url)
-        parcel.writeDouble(social_rank)
+        social_rank?.let { parcel.writeDouble(it) }
     }
 
     override fun describeContents(): Int {

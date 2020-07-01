@@ -14,7 +14,12 @@ import kotlin.math.roundToInt
 
 class RecipeRecycleAdapter(
     private var onRecipeListener: OnRecipeListener
-) : RecyclerView.Adapter<RecipeRecycleAdapter.RecipeViewHolder>() {
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
+    companion object {
+        var RECIPE_TYPE = 1
+        var LOADING_TYPE = 2
+    }
 
     private var mRecipes: List<Recipe>? = null
 
@@ -44,26 +49,78 @@ class RecipeRecycleAdapter(
         }
     }
 
-    override fun onBindViewHolder(holder: RecipeViewHolder, position: Int) {
+    override fun onBindViewHolder(viewHolder: RecyclerView.ViewHolder, position: Int) {
 
-        val requestOptions = RequestOptions().placeholder(R.drawable.ic_launcher_foreground)
+        var itemViewType = getItemViewType(position)
 
-        mRecipes?.let {mRecipes ->
-            Glide.with(holder.view.context)
-                .setDefaultRequestOptions(requestOptions)
-                .load(mRecipes[position].image_url)
-                .into(holder.image)
+        if (itemViewType == RECIPE_TYPE) {
+            val requestOptions = RequestOptions().placeholder(R.drawable.ic_launcher_foreground)
 
-            holder.title.text = mRecipes[position].title
-            holder.publisher.text = mRecipes[position].publisher
-            holder.socialScore.text = mRecipes[position].social_rank.roundToInt().toString()
+            mRecipes?.let { mRecipes ->
+                var holder = viewHolder as RecipeViewHolder
+                Glide.with(holder.view.context)
+                    .setDefaultRequestOptions(requestOptions)
+                    .load(mRecipes[position].image_url)
+                    .into(holder.image)
+
+                holder.title.text = mRecipes[position].title
+                holder.publisher.text = mRecipes[position].publisher
+                holder.socialScore.text = mRecipes[position].social_rank?.roundToInt().toString()
+            }
+        }
+    }
+
+    override fun getItemViewType(position: Int): Int {
+        return if (mRecipes?.get(position)?.title.equals("LOADING..."))
+            LOADING_TYPE
+        else RECIPE_TYPE
+    }
+
+    fun displayLoading(){
+        if(!isLoading()){
+            val recipe = Recipe()
+            recipe.title = "LOADING..."
+            val loadingList = ArrayList<Recipe>()
+            loadingList.add(recipe)
+             mRecipes = loadingList
+            notifyDataSetChanged()
+        }
+    }
+
+    private fun isLoading() : Boolean{
+        mRecipes?.let {
+            if (it.isNotEmpty()){
+                if (it[it.size - 1].title!! == "LOADING..."){
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        var view: View? = null
+        when (viewType) {
+            RECIPE_TYPE -> {
+                view =
+                    LayoutInflater.from(parent.context)
+                        .inflate(R.layout.layout_recipe_list, parent, false)
+                return RecipeViewHolder(view, onRecipeListener)
+            }
+            LOADING_TYPE -> {
+                view =
+                    LayoutInflater.from(parent.context)
+                        .inflate(R.layout.layout_loading_list_item, parent, false)
+                return LoadingViewHolder(view)
+            }
+            else -> {
+                view =
+                    LayoutInflater.from(parent.context)
+                        .inflate(R.layout.layout_recipe_list, parent, false)
+                return RecipeViewHolder(view, onRecipeListener)
+            }
         }
 
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecipeViewHolder {
-        val view =
-            LayoutInflater.from(parent.context).inflate(R.layout.layout_recipe_list, parent, false)
-        return RecipeViewHolder(view, onRecipeListener)
-    }
 }
