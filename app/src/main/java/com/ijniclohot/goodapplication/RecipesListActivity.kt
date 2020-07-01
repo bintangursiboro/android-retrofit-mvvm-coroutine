@@ -29,7 +29,7 @@ class RecipesListActivity : BaseActivity(), OnRecipeListener {
         mRecipeListViewModel = ViewModelProvider(this)[RecipeListViewModel::class.java]
 
         initRecyclerAdapter()
-        subscribeObserver()
+        subscribeObserverCoroutine()
         initSearchView()
         initRecycleViewItem()
     }
@@ -48,9 +48,9 @@ class RecipesListActivity : BaseActivity(), OnRecipeListener {
     private fun subscribeObserver() {
         mRecipeListViewModel.getRecipes().observe(this,
             Observer {
-                if (it == null){
+                if (it == null) {
                     recipeListAdapter.displayCategory()
-                }else{
+                } else {
                     it.forEach { recipe ->
                         Log.d(TAG, "onChanged: " + recipe.title)
                     }
@@ -60,12 +60,25 @@ class RecipesListActivity : BaseActivity(), OnRecipeListener {
             })
     }
 
+    private fun subscribeObserverCoroutine() {
+        mRecipeListViewModel.getRecipesCoroutine().observe(this, Observer {
+            if (it == null) {
+                recipeListAdapter.displayCategory()
+            } else {
+                it.forEach { recipe ->
+                    Log.d(TAG, "onChanged: " + recipe.title)
+                }
+                recipeListAdapter.setRecipe(it)
+            }
+        })
+    }
+
     private fun initSearchView() {
         search_view.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 query?.apply {
                     recipeListAdapter.displayLoading()
-                    mRecipeListViewModel.searchRecipeApi(this, 1)
+                    mRecipeListViewModel.searchRecipeApiCoroutine(this, 1)
                 }
                 return false
             }
