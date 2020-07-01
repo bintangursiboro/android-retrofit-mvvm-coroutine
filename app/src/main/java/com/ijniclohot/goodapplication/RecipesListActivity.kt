@@ -12,7 +12,7 @@ import com.ijniclohot.goodapplication.models.Recipe
 import com.ijniclohot.goodapplication.viewmodel.RecipeListViewModel
 import kotlinx.android.synthetic.main.activity_recipe_list.*
 
-class  RecipesListActivity : BaseActivity(), OnRecipeListener {
+class RecipesListActivity : BaseActivity(), OnRecipeListener {
 
     companion object {
         val TAG = "RecipeListActivity"
@@ -31,9 +31,14 @@ class  RecipesListActivity : BaseActivity(), OnRecipeListener {
         initRecyclerAdapter()
         subscribeObserver()
         initSearchView()
+        initRecycleViewItem()
     }
 
-    private fun initRecyclerAdapter(){
+    private fun initRecycleViewItem(){
+        recipeListAdapter.displayCategory()
+    }
+
+    private fun initRecyclerAdapter() {
         recipeListAdapter = RecipeRecycleAdapter(this)
         recipe_list.adapter = recipeListAdapter
         recipe_list.layoutManager = LinearLayoutManager(this)
@@ -55,7 +60,7 @@ class  RecipesListActivity : BaseActivity(), OnRecipeListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 query?.apply {
                     recipeListAdapter.displayLoading()
-                    mRecipeListViewModel.searchRecipeApi(this,1)
+                    mRecipeListViewModel.searchRecipeApi(this, 1)
                 }
                 return false
             }
@@ -63,7 +68,6 @@ class  RecipesListActivity : BaseActivity(), OnRecipeListener {
             override fun onQueryTextChange(newText: String?): Boolean {
                 return false
             }
-
         })
     }
 

@@ -1,5 +1,6 @@
 package com.ijniclohot.goodapplication.adapter
 
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,6 +11,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.ijniclohot.goodapplication.R
 import com.ijniclohot.goodapplication.models.Recipe
+import com.ijniclohot.goodapplication.utils.Constant
 import kotlin.math.roundToInt
 
 class RecipeRecycleAdapter(
@@ -19,6 +21,7 @@ class RecipeRecycleAdapter(
     companion object {
         var RECIPE_TYPE = 1
         var LOADING_TYPE = 2
+        var CATEGORY_TYPE = 3
     }
 
     private var mRecipes: List<Recipe>? = null
@@ -35,12 +38,12 @@ class RecipeRecycleAdapter(
         notifyDataSetChanged()
     }
 
-    inner class RecipeViewHolder(var view: View, var onRecipeListener: OnRecipeListener) :
+    inner class RecipeViewHolder(var view: View, private var onRecipeListener: OnRecipeListener) :
         RecyclerView.ViewHolder(view) {
-        var title = view.findViewById<TextView>(R.id.recipe_title)
-        var publisher = view.findViewById<TextView>(R.id.recipe_publisher)
-        var socialScore = view.findViewById<TextView>(R.id.recipe_social_score)
-        var image = view.findViewById<AppCompatImageView>(R.id.recipe_image)
+        var title = view.findViewById<TextView>(R.id.recipe_title)!!
+        var publisher = view.findViewById<TextView>(R.id.recipe_publisher)!!
+        var socialScore = view.findViewById<TextView>(R.id.recipe_social_score)!!
+        var image = view.findViewById<AppCompatImageView>(R.id.recipe_image)!!
 
         init {
             view.setOnClickListener {
@@ -57,7 +60,7 @@ class RecipeRecycleAdapter(
             val requestOptions = RequestOptions().placeholder(R.drawable.ic_launcher_foreground)
 
             mRecipes?.let { mRecipes ->
-                var holder = viewHolder as RecipeViewHolder
+                val holder = viewHolder as RecipeViewHolder
                 Glide.with(holder.view.context)
                     .setDefaultRequestOptions(requestOptions)
                     .load(mRecipes[position].image_url)
@@ -67,30 +70,60 @@ class RecipeRecycleAdapter(
                 holder.publisher.text = mRecipes[position].publisher
                 holder.socialScore.text = mRecipes[position].social_rank?.roundToInt().toString()
             }
+        } else if (itemViewType == CATEGORY_TYPE) {
+            val requestOptions = RequestOptions().placeholder(R.drawable.ic_launcher_background)
+
+            mRecipes?.let {
+                val uri =
+                    Uri.parse("android.resource://com.ijniclohot.goodapplication/drawable/" + it[position].image_url)
+                val holder = viewHolder as CategoryViewHolder
+                Glide.with(holder.itemView.context)
+                    .setDefaultRequestOptions(requestOptions)
+                    .load(uri)
+                    .into(holder.categoryImage)
+                holder.categoryTitle.text = it[position].title
+            }
         }
     }
 
     override fun getItemViewType(position: Int): Int {
-        return if (mRecipes?.get(position)?.title.equals("LOADING..."))
-            LOADING_TYPE
-        else RECIPE_TYPE
+        return when {
+            mRecipes?.get(position)?.social_rank?.toInt() == -1 -> {
+                CATEGORY_TYPE
+            }
+            mRecipes?.get(position)?.title.equals("LOADING...") -> LOADING_TYPE
+            else -> RECIPE_TYPE
+        }
     }
 
-    fun displayLoading(){
-        if(!isLoading()){
+    fun displayCategory(){
+        val categories = ArrayList<Recipe>()
+         for (i in Constant.DEFAULT_SEARCH_CATEGORIES.indices){
+             val recipe = Recipe()
+             recipe.title = Constant.DEFAULT_SEARCH_CATEGORIES[i]
+             recipe.image_url = Constant.DEFAULT_SEARCH_CATEGORY_IMAGES[i]
+             recipe.social_rank = -1.0
+             categories.add(recipe)
+         }
+        mRecipes = categories
+        notifyDataSetChanged()
+    }
+
+    fun displayLoading() {
+        if (!isLoading()) {
             val recipe = Recipe()
             recipe.title = "LOADING..."
             val loadingList = ArrayList<Recipe>()
             loadingList.add(recipe)
-             mRecipes = loadingList
+            mRecipes = loadingList
             notifyDataSetChanged()
         }
     }
 
-    private fun isLoading() : Boolean{
+    private fun isLoading(): Boolean {
         mRecipes?.let {
-            if (it.isNotEmpty()){
-                if (it[it.size - 1].title!! == "LOADING..."){
+            if (it.isNotEmpty()) {
+                if (it[it.size - 1].title!! == "LOADING...") {
                     return true
                 }
             }
@@ -112,6 +145,12 @@ class RecipeRecycleAdapter(
                     LayoutInflater.from(parent.context)
                         .inflate(R.layout.layout_loading_list_item, parent, false)
                 return LoadingViewHolder(view)
+            }
+            CATEGORY_TYPE -> {
+                view =
+                    LayoutInflater.from(parent.context)
+                        .inflate(R.layout.layout_category_list_item, parent, false)
+                return CategoryViewHolder(view, onRecipeListener)
             }
             else -> {
                 view =
